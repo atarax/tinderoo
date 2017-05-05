@@ -1,0 +1,15 @@
+plarform: android
+User-Agent: Tinder Android Version 6.11.0
+os-version: 23
+Accept-Language: de
+Host: api.gotinder.com
+Connection: Keep-Alive
+Accept-Encoding: gzip
+If-None-Match: W/"1975028178"
+X-Auth-Token: fb674ffc-edc5-4c0c-a482-8b5622d61538
+
+
+endpoints found:
+
+https://api.gotinder.com/meta
+

@@ -1,0 +1,90 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+    var items = [];
+
+    var itemNumber = null;
+    var currentItem = {};
+
+    function getRecommendations(callback) {
+        $.getJSON('api.php?method=recs', [], function(data) {
+            console.log('refresh');
+            callback(data.results);
+        });
+    }
+
+    function loadNextItem() {
+        if( itemNumber == null | itemNumber == items.count ) {
+            getRecommendations( refreshRecommendations );
+            return;
+        }
+
+        itemNumber++;
+        currentItem = items[itemNumber];
+
+        if( currentItem == undefined ) {
+            console.log( 'empty' );
+            $('#nextButton').prop('disabled', true);
+            getRecommendations(refreshRecommendations);
+            return;
+        }
+
+        updateImage();
+    }
+
+    function refreshRecommendations(newRecs) {
+        items = newRecs;
+        itemNumber = 0;
+        currentItem = items[itemNumber];
+        updateImage();
+        $('#nextButton').prop('disabled', false);
+    }
+
+    function likeCurrentItem() {
+        $.post('api.php?method=like', currentItem);
+        loadNextItem();
+    }
+
+    function updateImage() {
+        console.log( currentItem );
+        var photoUrl = currentItem.photos[0].url;
+        $('#currentImage').attr('src', photoUrl);
+        $('#itemName').html(currentItem.name);
+    }
+
+    function loop() {
+        likeCurrentItem();
+        setTimeout(loop,3000);
+    }
+
+
+    $('#itemName').innerHtml = 'sadfasdf';
+
+    loadNextItem();
+    setTimeout(loop,3);
+
+    console.log('foo');
+    //document.ready(function() { getRecommendations() });
+</script>
+
+<html>
+<body>
+<div style="display: inline-block;">
+    <div style="display: inline-block;">
+        <button id="nextImageButton">&lt;</button>
+    </div>
+    <div style="display: inline-block;">
+        <img id="currentImage" style="max-width: 500px;" src="test.jpg">
+    </div>
+    <div>
+        <button id="nextImageButton">&gt;</button>
+    </div>
+    <div style="display: inline-block;">
+        <span>Name: </span><span id="itemName"></span>
+    </div>
+</div>
+    <div id="response">
+        <button id="likeButton" onclick="likeCurrentItem()">Like</button>
+    </div>
+</body>
+</html>
