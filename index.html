@@ -3,7 +3,7 @@
 <script type="text/javascript">
     var items = [];
 
-    var itemNumber = null;
+    var currentItemNumber = 0;
     var currentItem = {};
 
     function getRecommendations(callback) {
@@ -14,54 +14,79 @@
     }
 
     function loadNextItem() {
-        if( itemNumber == null | itemNumber == items.count ) {
-            getRecommendations( refreshRecommendations );
-            return;
+        console.log('loadNextItem');
+        console.log('currentItemNumber',currentItemNumber);
+        console.log('itemcount', items.length);
+        console.log('items',items);
+        console.log('currentItem',currentItem);
+
+        if(items.length === 0) {
+            return null;
         }
 
-        itemNumber++;
-        currentItem = items[itemNumber];
-
-        if( currentItem == undefined ) {
-            console.log( 'empty' );
+        currentItemNumber++;
+        currentItem = items[currentItemNumber];
+        if( currentItem === undefined ) {
             $('#nextButton').prop('disabled', true);
-            getRecommendations(refreshRecommendations);
-            return;
+            return null;
         }
 
-        updateImage();
+        console.log('bkds',currentItemNumber);
+
+        while(currentItem.type !== 'user') {
+            currentItemNumber++;
+
+            if( currentItemNumber === items.length ) {
+                $('#nextButton').prop('disabled', true);
+                return null;
+            }
+
+            currentItem = items[currentItemNumber];
+            console.log('itemType', currentItem.type);
+        }
+
+        return currentItem;
     }
 
-    function refreshRecommendations(newRecs) {
+    function refreshRecommendationsCallback(newRecs) {
+        console.log('new recs', newRecs);
         items = newRecs;
-        itemNumber = 0;
-        currentItem = items[itemNumber];
-        updateImage();
+        currentItemNumber = 0;
         $('#nextButton').prop('disabled', false);
     }
 
-    function likeCurrentItem() {
-        $.post('api.php?method=like', currentItem);
-        loadNextItem();
+    function likeCurrentItem(item) {
+        $.post('api.php?method=like', item);
     }
 
-    function updateImage() {
-        console.log( currentItem );
-        var photoUrl = currentItem.photos[0].url;
+    function updateImage(itemToUpdate) {
+        console.log( 'update', itemToUpdate );
+        var photoUrl = itemToUpdate.user.photos[0].url;
         $('#currentImage').attr('src', photoUrl);
-        $('#itemName').html(currentItem.name);
+        $('#itemName').html(itemToUpdate.name);
     }
 
     function loop() {
-        likeCurrentItem();
+        console.log('loop', currentItem);
+        console.log(currentItemNumber);
+
+        var nextItem = loadNextItem();
+        if(nextItem === null) {
+            getRecommendations(refreshRecommendationsCallback);
+        }
+        else {
+            likeCurrentItem(nextItem);
+            updateImage(nextItem);
+        }
         setTimeout(loop,3000);
     }
 
+    var delay = 3000;
 
     $('#itemName').innerHtml = 'sadfasdf';
 
-    loadNextItem();
-    setTimeout(loop,3);
+    //getRecommendations(refreshRecommendationsCallback);
+    loop();
 
     console.log('foo');
     //document.ready(function() { getRecommendations() });
@@ -74,7 +99,7 @@
         <button id="nextImageButton">&lt;</button>
     </div>
     <div style="display: inline-block;">
-        <img id="currentImage" style="max-width: 500px;" src="test.jpg">
+        <img id="currentImage" style="max-width: 500px;" src="">
     </div>
     <div>
         <button id="nextImageButton">&gt;</button>
