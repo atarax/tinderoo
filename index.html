@@ -63,7 +63,7 @@
         console.log( 'update', itemToUpdate );
         var photoUrl = itemToUpdate.user.photos[0].url;
         $('#currentImage').attr('src', photoUrl);
-        $('#itemName').html(itemToUpdate.name);
+        $('#itemName').html(itemToUpdate.user.name);
     }
 
     function loop() {
